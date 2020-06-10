@@ -1044,12 +1044,23 @@ def CompileROIs(home_dir):
 
 
 #-----Create class object-----
-class ElastixRegistration():
+class Elastix():
 	"""Elastix image registration class
 	"""
 
-	def __init__(fixed,moving,out_dir,p0,p1=None,fp=None,mp=None,fMask=None,mkdir=False):
+	def __init__(self):
 		"""initialize class instance
+		"""
+
+	#Add main elastix component
+	def Run(fixed,moving,out_dir,p0,p1=None,fp=None,mp=None,fMask=None,mkdir=False)):
+	    """Run the elastix registration. You must be able to call elastix
+		from your command shell to use this. You must also have your parameter
+		text files set before running (see elastix parameter files).
+
+		Currently supports nifti1image format only!
+
+		fixed:
 		"""
 
 		#Create pathlib objects
@@ -1062,13 +1073,7 @@ class ElastixRegistration():
 		self.mp = None if mp is None else self.mp = Path(fp)
 		self.fMask = None if fMask is None else self.fMask = Path(fMask)
 		self.mkdir = mkdir
-
-	#Add main elastix component
-	def RunElastix():
-	    """This is a python function for running the elastix image registration
-	    toolbox. You must be able to call elastix from your command shell to use this.
-	    You must also have your parameter text files set before running this through
-	    python."""
+		self.command = "elastix"
 
 	    #Get the name of the output directory
 	    out_dir = Path(out_dir)
@@ -1077,25 +1082,32 @@ class ElastixRegistration():
 	    #Get the names of the input images
 	    fixedName = Path(fixed)
 	    movingName = Path(moving)
-	    #Get the number of channels for the fixed and moving images
-	    niiFixed = nib.load(str(fixedName))
-	    niiMoving = nib.load(str(movingName))
 
-	    #Check to see if there is single channel input
-	    if niiFixed.ndim is 2 and niiMoving.ndim is 2:
+		#Load the images to check for dimension number
+		print('Loading images...')
+	    #Load images
+	    niiFixed = nib.load(str(self.fixed))
+	    niiMoving = nib.load(str(self.moving))
+		#Print update
+		print('Done loading')
+
+	    #Check to see if there is single channel input (grayscale)
+	    if niiFixed.ndim == 2 and niiMoving.ndim == 2:
 	        print('Detected single channel input images...')
-	        #Send the command to shell to run elastix
-	        command = "elastix -f "+str(fixed)+ " -m "+str(moving)
+	        #Add fixed and moving image to the command string
+	        self.command = self.command+" -f "+str(self.fixed)+ " -m "+str(self.moving)
+
 	    #Check to see if there is multichannel input
 	    else:
 	        print('Exporting single channel images for multichannel input...')
 	        #Read the images
 	        niiFixed_im = niiFixed.get_fdata()
 	        niiMoving_im = niiMoving.get_fdata()
+
 	        #Set up list of names for the images
 	        fixedList = []
 	        movingList = []
-	        command = "elastix"
+
 	        #Export single channel images for each channel
 	        for i in range(niiFixed.shape[2]):
 	            #Create a filename
@@ -1103,13 +1115,14 @@ class ElastixRegistration():
 	            #Update the list of names for fixed image
 	            fixedList.append(fname)
 	            #Update the list of names for fixed image
-	            command = command + ' -f' + str(i) + ' ' + str(fname)
+	            self.command = self.command + ' -f' + str(i) + ' ' + str(fname)
 	            #Create a nifti image
 	            #Check to see if the path exists
 	            if not fname.is_file():
 	                #Create a nifti image
 	                nii_im = nib.Nifti1Image(niiFixed_im[:,:,i], affine=np.eye(4))
 	                nib.save(nii_im,str(fname))
+
 	        for i in range(niiMoving.shape[2]):
 	            #Create a filename
 	            mname = Path(os.path.join(movingName.parent,str(movingName.stem+str(i)+movingName.suffix)))
@@ -1162,6 +1175,20 @@ class ElastixRegistration():
 
 	    #Return values
 	    return command
+
+
+
+
+class Transformix():
+	"""Python class for transformix
+	"""
+
+	def __init__(self):
+		"""initialize class instance
+		"""
+
+		#Create pathlib objects
+
 
 
 #
