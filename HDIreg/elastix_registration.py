@@ -1053,7 +1053,7 @@ class Elastix():
 		"""
 
 	#Add main elastix component
-	def Run(fixed,moving,out_dir,p0,p1=None,fp=None,mp=None,fMask=None,mkdir=False)):
+	def RunElastix(fixed,moving,out_dir,p0,p1=None,fp=None,mp=None,fMask=None)):
 	    """Run the elastix registration. You must be able to call elastix
 		from your command shell to use this. You must also have your parameter
 		text files set before running (see elastix parameter files).
@@ -1072,16 +1072,7 @@ class Elastix():
 		self.fp = None if fp is None else self.fp = Path(fp)
 		self.mp = None if mp is None else self.mp = Path(fp)
 		self.fMask = None if fMask is None else self.fMask = Path(fMask)
-		self.mkdir = mkdir
 		self.command = "elastix"
-
-	    #Get the name of the output directory
-	    out_dir = Path(out_dir)
-	    #Get the name of the parameter file
-	    p0 = Path(p0)
-	    #Get the names of the input images
-	    fixedName = Path(fixed)
-	    movingName = Path(moving)
 
 		#Load the images to check for dimension number
 		print('Loading images...')
@@ -1101,8 +1092,8 @@ class Elastix():
 	    else:
 	        print('Exporting single channel images for multichannel input...')
 	        #Read the images
-	        niiFixed_im = niiFixed.get_fdata()
-	        niiMoving_im = niiMoving.get_fdata()
+	        niiFixed = niiFixed.get_fdata()
+	        niiMoving = niiMoving.get_fdata()
 
 	        #Set up list of names for the images
 	        fixedList = []
@@ -1111,7 +1102,7 @@ class Elastix():
 	        #Export single channel images for each channel
 	        for i in range(niiFixed.shape[2]):
 	            #Create a filename
-	            fname = Path(os.path.join(fixedName.parent,str(fixedName.stem+str(i)+fixedName.suffix)))
+	            fname = Path(os.path.join(self.fixed.parent,str(self.fixed.stem+str(i)+self.fixed.suffix)))
 	            #Update the list of names for fixed image
 	            fixedList.append(fname)
 	            #Update the list of names for fixed image
@@ -1120,61 +1111,71 @@ class Elastix():
 	            #Check to see if the path exists
 	            if not fname.is_file():
 	                #Create a nifti image
-	                nii_im = nib.Nifti1Image(niiFixed_im[:,:,i], affine=np.eye(4))
+	                nii_im = nib.Nifti1Image(niiFixed[:,:,i], affine=np.eye(4))
 	                nib.save(nii_im,str(fname))
 
 	        for i in range(niiMoving.shape[2]):
 	            #Create a filename
-	            mname = Path(os.path.join(movingName.parent,str(movingName.stem+str(i)+movingName.suffix)))
+	            mname = Path(os.path.join(self.moving.parent,str(self.moving.stem+str(i)+self.moving.suffix)))
 	            #Update the list of names for moving image
 	            movingList.append(mname)
 	            #Update the list of names for moving image
-	            command = command + ' -m' + str(i) + ' ' + str(mname)
+	            self.command = self.command + ' -m' + str(i) + ' ' + str(mname)
 	            #Check to see if the path exists
 	            if not mname.is_file():
 	                #Create a nifti image
-	                nii_im = nib.Nifti1Image(niiMoving_im[:,:,i], affine=np.eye(4))
+	                nii_im = nib.Nifti1Image(niiMoving[:,:,i], affine=np.eye(4))
 	                nib.save(nii_im,str(mname))
 
 	    #Add the parameter files
-	    command = command+" -p "+str(p0)
+	    self.command = self.command+" -p "+str(self.p0)
 	    #Check for additional files
-	    if p1 is not None:
-	        #Create pathlib Path
-	        p1 = Path(p1)
-	        command = command + " -p "+str(p1)
+	    if self.p1 is not None:
+			#Add to the command
+	        self.command = self.command + " -p "+str(self.p1)
 
-	    #Check for corresponding points in registration
-	    if fp and mp is not None:
-	        #Create pathlib Paths
-	        fp = Path(fp)
-	        mp = Path(mp)
-	        command = command +" -fp "+str(fp)+" -mp "+str(mp)
+	    #Check for corresponding points in registration (must have fixed and moving set)
+	    if self.fp and self.mp is not None:
+			#Add to the command
+	        self.command = self.command +" -fp "+str(self.fp)+" -mp "+str(self.mp)
 
 	    #Check for fixed mask
 	    if fMask is not None:
 	        #Create pathlib Paths
 	        fMask = Path(fMask)
-	        command = command +" -fMask "+str(fMask)
+	        self.command = self.command +" -fMask "+str(fMask)
 
 	    #Check for making new directories
-	    if mkdir is True:
-	        n=0
-	        while n>=0:
-	            tmp_name = "elastix"+str(n)
-	            if not os.path.exists(Path(os.path.join(out_dir,tmp_name))):
-	                os.mkdir(Path(os.path.join(out_dir,tmp_name)))
-	                out_dir = Path(os.path.join(out_dir,tmp_name))
-	                break
-	            n+=1
-	    #Add the output directory to the command
-	    command = command +" -out "+str(out_dir)
+	    #if mkdir is True:
+	    #    n=0
+	    #    while n>=0:
+	    #        tmp_name = "elastix"+str(n)
+	    #        if not os.path.exists(Path(os.path.join(out_dir,tmp_name))):
+	    #            os.mkdir(Path(os.path.join(out_dir,tmp_name)))
+	    #            out_dir = Path(os.path.join(out_dir,tmp_name))
+	    #            break
+	    #        n+=1
 
+	    #Add the output directory to the command
+	    self.command = self.command +" -out "+str(self.out_dir)
+
+		#Print command
+		print(str(self.command))
+		#Print elastix update
+		print('Running elastix...')
+
+		#Start timer
+		start = time.time()
 	    #Send the command to the shell
-	    os.system(command)
+	    os.system(self.command)
+		#Stop timer
+		stop = time.time()
+
+		#Print update
+		print('Finished -- computation took '+str(stop-start)+'sec.')
 
 	    #Return values
-	    return command
+	    return self.command
 
 
 
