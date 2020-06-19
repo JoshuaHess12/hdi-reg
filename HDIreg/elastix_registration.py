@@ -19,7 +19,7 @@ from numba import njit, prange
 import subprocess
 
 import utils
-import MultiModalStack as mms
+
 
 #-----------------General Utility Functions for Registration-----------------------
 
@@ -1048,27 +1048,15 @@ class Elastix():
 	"""Elastix image registration class
 	"""
 
-	def __init__(self):
+	def __init__(self,fixed,moving,out_dir,p,fp=None,mp=None,fMask=None):
 		"""initialize class instance
 		"""
 
-	#Add main elastix component
-	def RunElastix(fixed,moving,out_dir,p0,p1=None,fp=None,mp=None,fMask=None)):
-	    """Run the elastix registration. You must be able to call elastix
-		from your command shell to use this. You must also have your parameter
-		text files set before running (see elastix parameter files).
-
-		Currently supports nifti1image format only!
-
-		fixed:
-		"""
-
-		#Create pathlib objects
+		#Create pathlib objects and set class parameters
 		self.fixed = Path(fixed)
 		self.moving = Path(moving)
 		self.out_dir = Path(out_dir)
-		self.p0 = Path(p0)
-		self.p1 = None if p1 is None else self.p1 = Path(p1)
+		self.p = [Path(par_file) for par_file in p]
 		self.fp = None if fp is None else self.fp = Path(fp)
 		self.mp = None if mp is None else self.mp = Path(fp)
 		self.fMask = None if fMask is None else self.fMask = Path(fMask)
@@ -1128,11 +1116,7 @@ class Elastix():
 	                nib.save(nii_im,str(mname))
 
 	    #Add the parameter files
-	    self.command = self.command+" -p "+str(self.p0)
-	    #Check for additional files
-	    if self.p1 is not None:
-			#Add to the command
-	        self.command = self.command + " -p "+str(self.p1)
+	    self.command = self.command+" -p "+str(self.p[par_file]) for par_file in self.p
 
 	    #Check for corresponding points in registration (must have fixed and moving set)
 	    if self.fp and self.mp is not None:
@@ -1159,21 +1143,28 @@ class Elastix():
 	    #Add the output directory to the command
 	    self.command = self.command +" -out "+str(self.out_dir)
 
+	#Add main elastix component
+	def RunElastix(self,command):
+		"""
+		Run the elastix registration. You must be able to call elastix
+		from your command shell to use this. You must also have your parameter
+		text files set before running (see elastix parameter files).
+
+		Currently supports nifti1image format only!
+		"""
+
 		#Print command
 		print(str(self.command))
 		#Print elastix update
 		print('Running elastix...')
-
 		#Start timer
 		start = time.time()
 	    #Send the command to the shell
 	    os.system(self.command)
 		#Stop timer
 		stop = time.time()
-
 		#Print update
 		print('Finished -- computation took '+str(stop-start)+'sec.')
-
 	    #Return values
 	    return self.command
 
