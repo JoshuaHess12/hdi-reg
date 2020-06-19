@@ -24,7 +24,6 @@ def RunElastix(command):
 	from your command shell to use this. You must also have your parameter
 	text files set before running (see elastix parameter files).
 
-	Currently supports nifti1image format only!
 	command: string to be sent to the system for elastix running (see elastix command line implementation)
 	"""
 
@@ -126,7 +125,7 @@ class Elastix():
 					#Create a filename
 					fname = Path(os.path.join(tmpdirname,str(self.fixed.stem+str(i)+self.fixed.suffix)))
 					#Update the list of names for fixed image
-					self.fixed_channels.append.append(fname)
+					self.fixed_channels.append(fname)
 					#Update the list of names for fixed image
 					self.command = self.command + ' -f' + str(i) + ' ' + str(fname)
 					#Check to see if the path exists
