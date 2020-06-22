@@ -92,7 +92,70 @@ def ParseElastix(input,par):
 
 
 
+def ComposeTransforms(tps,out_dir):
+    """Function for composing a list of transform parameters together from
+    elastix
 
+    tps: list of paths for parameter files to string together -- in order of composition!
+    out_dir: Path to export newly generated/copied transform parameter files
+    """
 
+    #Ensure the given transform parameters are pathlib objects
+    tps = [Path(tp) for tp in tps]
+    #Ensure the output directory is pathlib object
+    out_dir = Path(out_dir)
+    #Create a list of new filenames that will be exported
+    new_tps = [Path(os.path.join(str(out_dir),"TransformParameters_comp."+str(i)+".txt")) for i in range(len(tps))]
+
+    #Extract and modify the first file in the list of transform parameters
+    with open(tps[0], 'r') as file:
+        #Read the file
+        filedata = file.read()
+        #Search for the initial transform parameter
+        for l in list(filedata.split("\n")):
+            #Check if inital transform string is in the line
+            if "InitialTransformParametersFileName" in l:
+                #Extract the inital transform parameter string
+                init_trans = str(l.split(" ")[1].strip(")").strip('"'))
+
+    #Check to ensure that the initial transform is no initial transform
+    if not init_trans == 'NoInitialTransform':
+        #Then replace the initial transform in the file with no inital transform
+        filedata = filedata.replace(init_trans, 'NoInitialTransform')
+    
+    #Write out the new data to the new transform parameter filename
+    with open(new_tps[0], 'w') as file:
+        #Write the new file
+        file.write(filedata)
+
+    #Remove the filedata for now
+    filedata = None
+
+    #Iterate through all other files and change inital transforms
+    for t in range(1,len(tps[1:])+1):
+        #Extract and modify the first file in the list of transform parameters
+        with open(tps[t], 'r') as f:
+            #Read the file
+            filedata = f.read()
+            #Search for the initial transform parameter
+            for l in list(filedata.split("\n")):
+                #Check if inital transform string is in the line
+                if "InitialTransformParametersFileName" in l:
+                    #Extract the inital transform parameter string
+                    init_trans = l.split(" ")[1].strip(")").strip('"')
+
+        #Then replace the initial transform in the file with the previous transform
+        filedata = filedata.replace(init_trans, str(new_tps[t-1]))
+
+        #Write out the new data to the new transform parameter filename
+        with open(new_tps[t], 'w') as file:
+            #Write the new file
+            file.write(filedata)
+
+    #Remove the filedata for now
+    filedata = None
+
+    #Return the list of new parameter files
+    return new_tps
 
 #
