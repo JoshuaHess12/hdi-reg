@@ -6,6 +6,8 @@ import re
 import pandas as pd
 import numpy as np
 
+import HDIprep_v1
+
 
 def SearchDir(ending = ".txt",dir=None):
     """Function for searching only in current directory for files that end with
@@ -122,7 +124,7 @@ def ComposeTransforms(tps,out_dir):
     if not init_trans == 'NoInitialTransform':
         #Then replace the initial transform in the file with no inital transform
         filedata = filedata.replace(init_trans, 'NoInitialTransform')
-    
+
     #Write out the new data to the new transform parameter filename
     with open(new_tps[0], 'w') as file:
         #Write the new file
@@ -157,5 +159,15 @@ def ComposeTransforms(tps,out_dir):
 
     #Return the list of new parameter files
     return new_tps
+
+
+
+
+
+
+
+
+
+
 
 #

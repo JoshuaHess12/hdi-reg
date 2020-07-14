@@ -62,40 +62,40 @@ class Elastix():
 		self.out_dir = Path(out_dir)
 		self.temp_dir = None
 		self.p = [Path(par_file) for par_file in p]
-		self.fp = None if fp is None else self.fp = Path(fp)
-		self.mp = None if mp is None else self.mp = Path(fp)
-		self.fMask = None if fMask is None else self.fMask = Path(fMask)
+		self.fp = None if fp is None else Path(fp)
+		self.mp = None if mp is None else Path(fp)
+		self.fMask = None if fMask is None else Path(fMask)
 		self.command = "elastix"
 
 		#Load the images to check for dimension number
 		print('Loading images...')
 	    #Load images
-	    niiFixed = nib.load(str(self.fixed))
-	    niiMoving = nib.load(str(self.moving))
+		niiFixed = nib.load(str(self.fixed))
+		niiMoving = nib.load(str(self.moving))
 		#Print update
 		print('Done loading')
 
 	    #Add the parameter files
-	    self.command = self.command+" -p "+str(self.p[par_file]) for par_file in self.p
+		self.command = self.command + ' '.join([" -p "+str(self.p[par_file]) for par_file in self.p])
 
 	    #Check for corresponding points in registration (must have fixed and moving set both)
-	    if self.fp and self.mp is not None:
+		if self.fp and self.mp is not None:
 			#Add to the command
-	        self.command = self.command +" -fp "+str(self.fp)+" -mp "+str(self.mp)
+			self.command = self.command +" -fp "+str(self.fp)+" -mp "+str(self.mp)
 
 	    #Check for fixed mask
-	    if fMask is not None:
+		if fMask is not None:
 			#Add the fixed mask to the command if it exists
-	        self.command = self.command +" -fMask "+str(fMask)
+			self.command = self.command +" -fMask "+str(fMask)
 
 	    #Add the output directory to the command
-	    self.command = self.command +" -out "+str(self.out_dir)
+		self.command = self.command +" -out "+str(self.out_dir)
 
 	    #Check to see if there is single channel input (grayscale)
-	    if niiFixed.ndim == 2 and niiMoving.ndim == 2:
-	        print('Detected single channel input images...')
+		if niiFixed.ndim == 2 and niiMoving.ndim == 2:
+			print('Detected single channel input images...')
 	        #Add fixed and moving image to the command string
-	        self.command = self.command+" -f "+str(self.fixed)+ " -m "+str(self.moving)
+			self.command = self.command+" -f "+str(self.fixed)+ " -m "+str(self.moving)
 			#Update the fixed channels
 			self.fixed_channels.append(self.fixed)
 			#Update the moving channels
@@ -107,16 +107,16 @@ class Elastix():
 			RunElastix(self.command)
 
 	    #Check to see if there is multichannel input
-	    else:
+		else:
 			#create a temporary directory using the context manager for channel-wise images
 			with tempfile.TemporaryDirectory(dir=self.out_dir) as tmpdirname:
 				#Print update
 				print('Created temporary directory', tmpdirname)
 				#Print update
-		        print('Exporting single channel images for multichannel input...')
+				print('Exporting single channel images for multichannel input...')
 		        #Read the images
-		        niiFixed = niiFixed.get_fdata()
-		        niiMoving = niiMoving.get_fdata()
+				niiFixed = niiFixed.get_fdata()
+				niiMoving = niiMoving.get_fdata()
 				#Update multichannel class option
 				self.multichannel = True
 
@@ -159,4 +159,4 @@ class Elastix():
 				RunElastix(self.command)
 
 		#Return the command itself
-		return self.command
+		#return self.command
