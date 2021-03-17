@@ -76,7 +76,7 @@ class Elastix():
 		print('Done loading')
 
 	    #Add the parameter files
-		self.command = self.command + ' '.join([" -p "+str(self.p[par_file]) for par_file in self.p])
+		self.command = self.command+' '.join([" -p "+str(self.p[par_file]) for par_file in range(len(self.p))])
 
 	    #Check for corresponding points in registration (must have fixed and moving set both)
 		if self.fp and self.mp is not None:

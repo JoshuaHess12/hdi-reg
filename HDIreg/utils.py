@@ -6,7 +6,6 @@ import re
 import pandas as pd
 import numpy as np
 
-import HDIprep_v1
 
 
 def SearchDir(ending = ".txt",dir=None):
