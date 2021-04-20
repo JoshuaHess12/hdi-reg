@@ -33,7 +33,7 @@ Options for importing data and processing are listed below. Detailed description
 | `--fixed` | path to fixed image (Ex. `--fixed ./fixedImage.nii`) |
 | `--moving` | path to moving image (Ex. `--moving ./movingImage.nii`) |
 | `--out_dir` | path to output directory (Ex. `--out_dir ./outdirectory`) |
-| `--p` | path(s) to parameter files for elastix registration (see examples [here]()) (Ex. `--p ./affineParameters.txt --p ./nonlinearParameters.txt`) |
+| `--p` | path(s) to parameter files for elastix registration (see examples [here](http://elastix.bigr.nl/wiki/index.php/Parameter_file_database)) (Ex. `--p ./affineParameters.txt --p ./nonlinearParameters.txt`) |
 | `--mp` | path to manual landmark points (Ex. `--mp ./movingPoints.txt`) |
 | `--fp` | path to manual landmark points (Ex. `--fp ./fixedPoints.txt`) |
 | `--fMask` | fixed image mask to draw samples from during optimization (Ex. `--fMask ./fixedMask.nii`) |
