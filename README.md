@@ -21,9 +21,27 @@ python app/command_transformix.py --in_im /data/newIm.nii  --tp /data/registrati
 
 ### Usage without Docker:
 If you are unable to use Docker on your machine, then you can still use hdi-reg:
-1. [download Elastix](https://github.com/SuperElastix/elastix/releases/tag/5.0.1) 
+1. [download](https://github.com/SuperElastix/elastix/releases/tag/5.0.1) the latest version of Elastix. 
 2. Make Elastix accessible to your `$PATH` environment (Ex. on a Mac, access your `.bash_profile` and add `export PATH=~/elastix-latest/bin:$PATH` and `export DYLD_LIBRARY_PATH=~/elastix-latest/lib:$DYLD_LIBRARY_PATH`)
 3. Run registration and transformix as above in step 5.
 
-## Contributing to hdi-reg
-If you are interested in contributing to hdi-reg, access the contents to see the software organization. Code structure is documented for each module.
+#### Input Parameters:
+Options for importing data and processing are listed below. Detailed descriptions of each function can be found within source code.
+| hdi-reg Step | Options |
+| --- | --- |
+| 1.`command_elastix.py` | image registration between fixed image and moving image |
+| `--fixed` | path to fixed image (Ex. `--fixed ./fixedImage.nii`) |
+| `--moving` | path to moving image (Ex. `--moving ./movingImage.nii`) |
+| `--out_dir` | path to output directory (Ex. `--out_dir ./outdirectory`) |
+| `--p` | path(s) to parameter files for elastix registration (see examples [here]()) (Ex. `--p ./affineParameters.txt --p ./nonlinearParameters.txt`) |
+| `--mp` | path to manual landmark points (Ex. `--mp ./movingPoints.txt`) |
+| `--fp` | path to manual landmark points (Ex. `--fp ./fixedPoints.txt`) |
+| `--fMask` | fixed image mask to draw samples from during optimization (Ex. `--fMask ./fixedMask.nii`) |
+| 1.`command_transformix.py` | transform images using saved transformation from elastix |
+| `--in_im` |path to image to transform (can be multichannel) (Ex. `--in_im ./movingMultichannel.nii`) |
+| `--out_dir` |  path to output directory (Ex. `--out_dir ./outdirectory`) |
+| `--tps` | path(s) to parameter files exported from elastix (Ex. `--tps ./affineTransformParameters.txt --tps ./nonlinearTransformParameters.txt`) |
+| `--in_target_size` | tuple indicating target size to rescale image to prior to tranformix (Ex. `--in_target_size (1000,1000`) |
+| `--crops` | nested dictionary coordinates to crop ROIs from in full image for further refinement <br> <br> Options: <br> `coords_csv` path to csv file indicating coordinates of full image to crop <br> `target_size` rescaled size of ROI to produce prior to transforming <br> `correction` padding to add to edges of crop to account for misalignment on full tissue <br> `tps` transform parameters (as above) focused on ROIs <br> `fixed_pad` padding to remove from the resulting image after transforming (if this matches padding added to fixed image, then result will be fully aligned) |
+
+
