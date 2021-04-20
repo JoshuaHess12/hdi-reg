@@ -29,7 +29,7 @@ If you are unable to use Docker on your machine, then you can still use hdi-reg:
 Options for importing data and processing are listed below. Detailed descriptions of each function can be found within source code.
 | hdi-reg Step | Options |
 | --- | --- |
-| 1.`command_elastix.py` | image registration between fixed image and moving image |
+| 1. `command_elastix.py` | image registration between fixed image and moving image |
 | `--fixed` | path to fixed image (Ex. `--fixed ./fixedImage.nii`) |
 | `--moving` | path to moving image (Ex. `--moving ./movingImage.nii`) |
 | `--out_dir` | path to output directory (Ex. `--out_dir ./outdirectory`) |
@@ -37,7 +37,7 @@ Options for importing data and processing are listed below. Detailed description
 | `--mp` | path to manual landmark points (Ex. `--mp ./movingPoints.txt`) |
 | `--fp` | path to manual landmark points (Ex. `--fp ./fixedPoints.txt`) |
 | `--fMask` | fixed image mask to draw samples from during optimization (Ex. `--fMask ./fixedMask.nii`) |
-| 1.`command_transformix.py` | transform images using saved transformation from elastix |
+| 2. `command_transformix.py` | transform images using saved transformation from elastix |
 | `--in_im` |path to image to transform (can be multichannel) (Ex. `--in_im ./movingMultichannel.nii`) |
 | `--out_dir` |  path to output directory (Ex. `--out_dir ./outdirectory`) |
 | `--tps` | path(s) to parameter files exported from elastix (Ex. `--tps ./affineTransformParameters.txt --tps ./nonlinearTransformParameters.txt`) |
