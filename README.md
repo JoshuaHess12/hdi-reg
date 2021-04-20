@@ -12,14 +12,18 @@ All image registration can be run with dependecies installed via Docker as follo
 4. Mount your data in the Docker container and enter shell with `docker run -it -v /path/to/data:/data joshuahess/hdi-reg:latest bash`
 5. Run the registration with your new data using the following command:
 ```bash
-python app/command_elastix.py --path_to_yaml /data/yourfile.yaml --out_dir /data
+python app/command_elastix.py --f /data/fixedImage.nii --m /data/movingImage.nii -p /data/registrationPars.txt --out_dir /data
+```
+6. Tranforming images, such as multichannel images, with transformix on new data can be run as follows:
+```bash
+python app/command_transformix.py --in_im /data/newIm.nii  --tp /data/registrationPars.txt --out_dir /data
 ```
 
 ### Usage without Docker:
 If you are unable to use Docker on your machine, then you can still use hdi-reg:
 1. [download Elastix](https://github.com/SuperElastix/elastix/releases/tag/5.0.1) 
 2. Make Elastix accessible to your `$PATH` environment (Ex. on a Mac, access your `.bash_profile` and add `export PATH=~/elastix-latest/bin:$PATH` and `export DYLD_LIBRARY_PATH=~/elastix-latest/lib:$DYLD_LIBRARY_PATH`)
-3. Run registration as above in step 5.
+3. Run registration and transformix as above in step 5.
 
 ## Contributing to hdi-reg
 If you are interested in contributing to hdi-reg, access the contents to see the software organization. Code structure is documented for each module.
