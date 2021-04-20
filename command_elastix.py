@@ -4,7 +4,7 @@
 
 #Import custom modules
 import parse_input
-import elastix
+from HDIreg import elastix
 
 #Parse the command line arguments
 args = parse_input.ParseCommandElastix()
