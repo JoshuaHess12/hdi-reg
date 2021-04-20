@@ -1,5 +1,3 @@
-ARG src=stage0
-
 FROM superelastix/elastix:5.0.1 AS elastix
 
 FROM python:3.8

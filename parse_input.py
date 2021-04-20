@@ -27,3 +27,23 @@ def ParseCommandElastix():
    print(dict)
    #Return the dictionary
    return dict
+
+def ParseCommandTransformix():
+   """Function for parsing command line arguments for input to transformix
+   """
+
+#if __name__ == '__main__':
+   parser = argparse.ArgumentParser()
+   parser.add_argument('--in_im')
+   parser.add_argument('--out_dir')
+   parser.add_argument('--tps', nargs='*')
+   parser.add_argument('--in_target_size')
+   parser.add_argument('--crops')
+   args = parser.parse_args()
+   #Create a dictionary object to pass to the next function
+   dict = {'in_im': args.in_im, 'out_dir': args.out_dir, 'tps': args.tps,\
+   'in_target_size': args.in_target_size, 'crops': args.crops}
+   #Print the dictionary object
+   print(dict)
+   #Return the dictionary
+   return dict
