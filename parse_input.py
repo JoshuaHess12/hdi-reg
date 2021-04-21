@@ -47,3 +47,22 @@ def ParseCommandTransformix():
    print(dict)
    #Return the dictionary
    return dict
+
+
+def ParseCommandElastixYAML():
+    """Function for parsing command line arguments for input to YAML HDIprep"""
+
+    # if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--fixed")
+    parser.add_argument("--moving")
+    parser.add_argument("--path_to_yaml")
+    parser.add_argument("--out_dir")
+    args = parser.parse_args()
+    # Create a dictionary object to pass to the next function
+    dict = {fixed': args.fixed, 'moving': args.moving,\
+    "path_to_yaml": args.path_to_yaml, "out_dir": args.out_dir}
+    # Print the dictionary object
+    print(dict)
+    # Return the dictionary
+    return dict

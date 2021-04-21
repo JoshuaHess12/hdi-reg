@@ -4,10 +4,10 @@
 
 #Import custom modules
 import parse_input
-from HDIreg import elastix
+import yaml_elastix
 
 #Parse the command line arguments
-args = parse_input.ParseCommandElastix()
+args = parse_input.ParseCommandElastixYAML()
 
 #Run the elastix registration function
-elastix.Elastix(**args)
+yaml_elastix.RunElastixYAML(**args)
