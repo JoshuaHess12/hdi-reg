@@ -11,13 +11,10 @@ import nibabel as nib
 from pathlib import Path
 import pandas as pd
 import tempfile
-import cv2
+from skimage.transform import resize
 import shutil
 
 #Import external modules
-
-
-
 
 def GetCropCoords(coords_csv, correction = 80):
 	"""
@@ -77,7 +74,7 @@ def CropROI(coords,full_img,target_size = None):
 
 	if target_size is not None:
 		#Remember that cv2 does the axis in the opposite order as numpy
-		tmp_ROI = cv2.resize(tmp_ROI,target_size)
+		tmp_ROI = resize(tmp_ROI,target_size)
 
 	#Create a nifti object
 	nifti_ROI = nib.Nifti1Image(np.rot90(tmp_ROI.T,1), affine=np.eye(4))
@@ -123,7 +120,6 @@ def RunTransformix(command):
 	#print('Finished')
 	#Return values
 	return command
-
 
 
 def CreateCompositeTransforms(tps, out_dir):
@@ -201,7 +197,8 @@ def CreateCompositeTransforms(tps, out_dir):
 		#Check to ensure that the initial transform is no initial transform
 		if init_trans != 'NoInitialTransform':
 			#Get the corresponding new file name from the old
-			n_tp = tp_dict[Path(init_trans)]
+			#n_tp = tp_dict[Path(init_trans)]
+			n_tp = new_tps[t-1]
 			#Then replace the initial transform in the file with the new tp
 			filedata = filedata.replace(init_trans, str(n_tp))
 
@@ -214,7 +211,7 @@ def CreateCompositeTransforms(tps, out_dir):
 	filedata = None
 
 	#Return the list of new parameter files
-	return transform_calls
+	return transform_calls,init_trans_list
 
 
 
@@ -234,8 +231,10 @@ def MultiTransformix(in_im, out_dir, tps):
 	command = "transformix"
 
 	#Run the CreateCompositeTransforms(tps, out_dir) function
-	trans_calls = CreateCompositeTransforms(tps, out_dir)
-	#print("Created transform parameters length:" + str(len(trans_calls)))
+	trans_calls,init_trans_list = CreateCompositeTransforms(tps, out_dir)
+	print("Created transform parameters length:" + str(len(trans_calls)))
+	print(str(transform_calls))
+	print(str(i) for i ininit_trans_list)
 
 	#Create temporary directory in the out_dir
 	with tempfile.TemporaryDirectory(dir=out_dir) as nestdirname:
@@ -411,7 +410,7 @@ class Transformix():
 							#Check to see if there is a target size for the image
 							if in_target_size is not None:
 								#Resize the image
-								niiIn = cv2.resize(niiIn,in_target_size)
+								niiIn = resize(niiIn,in_target_size)
 
 							#Create a nifti image from this slice
 							nii_im = nib.Nifti1Image(niiIn[:,:,i], affine=np.eye(4))
@@ -496,7 +495,7 @@ class Transformix():
 								if in_target_size != None:
 									#print("Got the resize")
 									#Create a nifti image from this slice
-									nii_im = nib.Nifti1Image(cv2.resize(niiIn[:,:,i],in_target_size), affine=np.eye(4))
+									nii_im = nib.Nifti1Image(resize(niiIn[:,:,i],in_target_size), affine=np.eye(4))
 									#print(" resized")
 								#No resize
 								else:
