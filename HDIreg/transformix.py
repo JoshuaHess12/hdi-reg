@@ -234,7 +234,6 @@ def MultiTransformix(in_im, out_dir, tps):
 	trans_calls,init_trans_list = CreateCompositeTransforms(tps, out_dir)
 	print("Created transform parameters length:" + str(len(trans_calls)))
 	print(str(transform_calls))
-	print(str(i) for i ininit_trans_list)
 
 	#Create temporary directory in the out_dir
 	with tempfile.TemporaryDirectory(dir=out_dir) as nestdirname:
@@ -384,6 +383,8 @@ class Transformix():
 		else:
 			#Update multichannel class option
 			self.multichannel = True
+			# print update
+			print('Detected multichannel input')
 
 			#Check to see if cropping the resulting image
 			if crops is None:
