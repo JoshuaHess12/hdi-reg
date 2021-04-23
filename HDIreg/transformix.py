@@ -233,7 +233,6 @@ def MultiTransformix(in_im, out_dir, tps):
 	#Run the CreateCompositeTransforms(tps, out_dir) function
 	trans_calls,init_trans_list = CreateCompositeTransforms(tps, out_dir)
 	print("Created transform parameters length:" + str(len(trans_calls)))
-	print(str(transform_calls))
 
 	#Create temporary directory in the out_dir
 	with tempfile.TemporaryDirectory(dir=out_dir) as nestdirname:
