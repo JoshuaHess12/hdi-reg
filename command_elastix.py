@@ -11,4 +11,4 @@ from HDIreg import elastix
 args = parse_input.ParseCommandElastix()
 
 #Run the elastix registration function
-elastix.RunElastix(**args)
+elastix.Elastix(**args)
