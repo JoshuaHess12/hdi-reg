@@ -15,6 +15,7 @@ from skimage.transform import resize
 import shutil
 
 #Import external modules
+from hdiutils.HDIimport import hdi_reader
 
 def GetCropCoords(coords_csv, correction = 80):
 	"""
@@ -299,6 +300,15 @@ def MultiTransformix(in_im, out_dir, tps):
 	return res_name
 
 
+#in_im="/Users/joshuahess/Desktop/Test/new_im_2_processed.nii"
+#out_dir="/Users/joshuahess/Desktop/Test"
+#tps="/Users/joshuahess/Desktop/Test/TransformParameters.0.txt"
+#in_target_size = None
+#crops = None
+
+
+
+
 
 #Create class structure for transformix implementation
 class Transformix():
@@ -335,6 +345,51 @@ class Transformix():
 		self.out_dir = Path(out_dir)
 		self.tps = [Path(t) for t in tps]
 		self.command = "transformix"
+		self.baseName = self.in_im.stem
+		self.ext = "".join(self.in_im.suffixes)
+
+		#Load the images to check for dimension number
+		print('Loading images...')
+		#Load images
+		niiIn = hdi_reader.HDIreader(
+		    path_to_data=in_im,
+		    path_to_markers=None,
+		    flatten=False,
+		    subsample=None,
+		    mask=None,
+		    save_mem=False
+		)
+		#Print update
+		print('Done loading')
+
+		# here we will get the extension of the image and will convert it to the nift-1
+		# format if it is not already in that format. While users can supply their own
+		# nifti formatted image to the pipeline, this ensures that other file formats
+		# can be used, although, it creates additionally overhead
+		# get the extension of the image
+		# ensure the input to transformix is nifti
+		if self.ext != ".nii":
+			# get the shape of the image
+			shp = len(niiIn.hdi.data.image_shape)
+			# create new name for the temporary image
+			tmp_nm = os.path.join(out_dir, next(tempfile._get_candidate_names())+".nii")
+			# export nifti intermediate
+			print('Creating nifti-1 intermediate for registration')
+			# export nifti
+			if shp > 2:
+				# Create nifti object -- transpose axes because of the transformation!
+				nii_im = nib.Nifti1Image(niiIn.hdi.data.image.transpose(1, 0, 2), affine=np.eye(4))
+			else:
+				# Create nifti object -- transpose axes because of the transformation!
+				nii_im = nib.Nifti1Image(niiIn.hdi.data.image.T, affine=np.eye(4))
+			#Save the nifti image
+			nib.save(nii_im,str(tmp_nm))
+			# remove the nifit memory
+			nii_im = None
+			# update the image name
+			print('Using nifti-1 intermediate for registration')
+			# update the input image
+			self.in_im = Path(tmp_nm)
 
 		#Load the images to check for dimension number
 		print('Loading images...')
@@ -373,7 +428,7 @@ class Transformix():
 				res_name = Path(os.path.join(self.out_dir,"result"+self.in_im.suffix))
 
 			#Create a new name
-			new_name = Path(os.path.join(self.out_dir,self.in_im.stem+'_result'+self.in_im.suffix))
+			new_name = Path(os.path.join(self.out_dir,self.baseName+'_result'+self.in_im.suffix))
 			#Get the resulting image to rename (so we don't overwrite results)
 			res_name.rename(new_name)
 
