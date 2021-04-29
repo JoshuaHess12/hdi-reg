@@ -37,12 +37,16 @@ def ParseCommandTransformix():
    parser.add_argument('--in_im')
    parser.add_argument('--out_dir')
    parser.add_argument('--tps', nargs='*')
-   parser.add_argument('--in_target_size')
+   parser.add_argument('--target_size', type=int, nargs='*')
+   parser.add_argument('--pad')
+   parser.add_argument('--trim', type=int)
    parser.add_argument('--crops')
+   parser.add_argument('--out_ext')
    args = parser.parse_args()
    #Create a dictionary object to pass to the next function
    dict = {'in_im': args.in_im, 'out_dir': args.out_dir, 'tps': args.tps,\
-   'in_target_size': args.in_target_size, 'crops': args.crops}
+   'target_size': args.target_size, 'pad': args.pad, 'trim': args.trim,\
+   'crops': args.crops, 'out_ext': args.out_ext}
    #Print the dictionary object
    print(dict)
    #Return the dictionary
