@@ -389,14 +389,15 @@ class Transformix():
 				tmp_nm = os.path.join(out_dir, next(tempfile._get_candidate_names())+".nii")
 				# export nifti intermediate
 				print('Creating nifti-1 intermediate for registration')
-				# check for image resizing
-				if (target_size != None) and (crops==None):
-					# transform the image
-					niiIn.hdi.data.image = resize(niiIn.hdi.data.image,target_size)
 				# check for padding
 				if pad!=None:
 					# pad the single-channel
 					niiIn.hdi.data.image = np.pad(image,[(pad[0], pad[0]), (pad[1], pad[1])],mode='constant')
+				# check for image resizing
+				if (target_size != None) and (crops==None):
+					# transform the image
+					niiIn.hdi.data.image = resize(niiIn.hdi.data.image,target_size)
+					
 				# Create nifti oject -- transpose axes because of the transformation!
 				nii_im = nib.Nifti1Image(niiIn.hdi.data.image.T, affine=np.eye(4))
 				#Save the nifti image
@@ -487,14 +488,14 @@ class Transformix():
 
 						# Check to see if the path exists
 						if not im_name.is_file():
-							# Check to see if there is a target size for the image
-							if target_size!=None:
-								# Resize the image
-								slice_in = resize(slice_in,target_size)
 							# check for padding
 							if pad!=None:
 								# pad the single-channel
 								slice_in = np.pad(slice_in,[(pad[0], pad[0]), (pad[1], pad[1])],mode='constant')
+							# Check to see if there is a target size for the image
+							if target_size!=None:
+								# Resize the image
+								slice_in = resize(slice_in,target_size)
 
 							# Create a nifti image from this slice
 							nii_im = nib.Nifti1Image(slice_in.T, affine=np.eye(4))
