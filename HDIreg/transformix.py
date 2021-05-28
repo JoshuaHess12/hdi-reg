@@ -349,10 +349,6 @@ class Transformix():
 		if target_size!=None:
 			# convert it to tuple from list (command line parser)
 			target_size = tuple(target_size)
-		# Check for input extension or none
-		if self.out_ext==None:
-			# convert it to be whatever extension the input image contains as default
-			self.out_ext = self.ext
 
 		#Load images
 		niiIn = hdi_reader.HDIreader(
@@ -366,7 +362,11 @@ class Transformix():
 		# update file information
 		self.baseName = niiIn.hdi.data.filename.stem.replace(".ome","")
 		self.ext = "".join(niiIn.hdi.data.filename.suffixes)
-
+		# Check for input extension or none
+		if self.out_ext==None:
+			# convert it to be whatever extension the input image contains as default
+			self.out_ext = self.ext
+			
 	    # Check to see if there is single channel input (grayscale)
 		if len(niiIn.hdi.data.image_shape) > 2:
 			#Update multichannel class option
