@@ -343,8 +343,6 @@ class Transformix():
 		self.out_dir = Path(out_dir)
 		self.tps = [Path(t) for t in tps]
 		self.command = "transformix"
-		self.baseName = self.in_im.stem.replace(".ome","")
-		self.ext = "".join(self.in_im.suffixes)
 		self.intermediate = False
 		self.out_ext = out_ext
 		# Check for input list or none
@@ -355,6 +353,7 @@ class Transformix():
 		if self.out_ext==None:
 			# convert it to be whatever extension the input image contains as default
 			self.out_ext = self.ext
+
 		#Load images
 		niiIn = hdi_reader.HDIreader(
 		    path_to_data=in_im,
@@ -364,8 +363,16 @@ class Transformix():
 		    mask=None,
 		    save_mem=False
 		)
-	    #Check to see if there is single channel input (grayscale)
+		# update file information
+		self.baseName = niiIn.hdi.data.filename.stem.replace(".ome","")
+		self.ext = "".join(niiIn.hdi.data.filename.suffixes)
+
+	    # Check to see if there is single channel input (grayscale)
 		if len(niiIn.hdi.data.image_shape) > 2:
+			#Update multichannel class option
+			self.multichannel = True
+		# check if imzML -- here we assume you have more than one channel
+		elif self.ext == '.imzML':
 			#Update multichannel class option
 			self.multichannel = True
 		# otherwise this is a single channel image
@@ -397,7 +404,7 @@ class Transformix():
 				if (target_size != None) and (crops==None):
 					# transform the image
 					niiIn.hdi.data.image = resize(niiIn.hdi.data.image,target_size)
-					
+
 				# Create nifti oject -- transpose axes because of the transformation!
 				nii_im = nib.Nifti1Image(niiIn.hdi.data.image.T, affine=np.eye(4))
 				#Save the nifti image
