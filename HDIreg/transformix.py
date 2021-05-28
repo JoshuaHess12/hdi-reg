@@ -366,13 +366,13 @@ class Transformix():
 		if self.out_ext==None:
 			# convert it to be whatever extension the input image contains as default
 			self.out_ext = self.ext
-			
-	    # Check to see if there is single channel input (grayscale)
-		if len(niiIn.hdi.data.image_shape) > 2:
+
+		# check if imzML -- here we assume you have more than one channel
+		if self.ext == '.imzML':
 			#Update multichannel class option
 			self.multichannel = True
-		# check if imzML -- here we assume you have more than one channel
-		elif self.ext == '.imzML':
+	    # Check to see if there is single channel input (grayscale)
+		elif len(niiIn.hdi.data.image_shape) > 2:
 			#Update multichannel class option
 			self.multichannel = True
 		# otherwise this is a single channel image
