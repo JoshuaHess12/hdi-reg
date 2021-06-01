@@ -38,7 +38,7 @@ def ParseCommandTransformix():
    parser.add_argument('--out_dir')
    parser.add_argument('--tps', nargs='*')
    parser.add_argument('--target_size', type=int, nargs='*')
-   parser.add_argument('--pad')
+   parser.add_argument('--pad', type=int, nargs='*')
    parser.add_argument('--trim', type=int)
    parser.add_argument('--crops')
    parser.add_argument('--out_ext')
