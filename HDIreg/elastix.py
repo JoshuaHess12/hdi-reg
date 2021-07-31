@@ -12,10 +12,6 @@ from pathlib import Path
 import pandas as pd
 import tempfile
 
-#Import external modules
-
-
-
 
 #Add main elastix component
 def RunElastix(command):
@@ -24,7 +20,10 @@ def RunElastix(command):
 	from your command shell to use this. You must also have your parameter
 	text files set before running (see elastix parameter files).
 
-	command: string to be sent to the system for elastix running (see elastix command line implementation)
+	Parameters
+	----------
+	command: string
+		Sent to the system for elastix running (see elastix command line implementation).
 	"""
 
 	#Print command
@@ -46,12 +45,34 @@ def RunElastix(command):
 
 #Define elastix class structure
 class Elastix():
-	"""Elastix image registration class
+	"""Elastix image registration class.
+
+	Parameters
+	----------
+	fixed: string
+		Path to fixed (reference) image.
+
+	moving: string
+		Path to moving image (image to be transformed).
+
+	out_dir: string
+		Path to output directory.
+
+	p: list (length number of registration parameter files)
+		Path to elastix image registration parameter files (in order of application).
+
+	fp: string (*.txt)
+		Path to fixed image landmark points for manual guidance registration.
+
+	mp: string (*.txt)
+		Path to moving image landmark points for manual guidance registration.
+
+	fMask: string (*.nii)
+		Path to fixed image mask that defines region on image to draw samples
+		from during registration.
 	"""
 
 	def __init__(self,fixed,moving,out_dir,p,fp=None,mp=None,fMask=None):
-		"""initialize class instance
-		"""
 
 		#Create pathlib objects and set class parameters
 		self.fixed = Path(fixed)

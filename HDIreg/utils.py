@@ -1,5 +1,7 @@
 #Functions for general purpose usage
 #Joshua Hess
+
+# Import modules
 import os
 from pathlib import Path
 import re
@@ -9,10 +11,22 @@ import numpy as np
 
 
 def SearchDir(ending = ".txt",dir=None):
-    """Function for searching only in current directory for files that end with
-    the specified suffix
+    """Search only in given directory for files that end with
+    the specified suffix.
 
-    Returns a list of full path file names"""
+    Parameters
+    ----------
+    ending: string (Default: ".txt")
+        Ending to search for in the given directory
+
+    dir: string (Default: None, will search in current working directory)
+        Directory to search for files in.
+
+    Returns
+    -------
+    full_list: list
+        List of pathlib objects for each file found with the given suffix.
+    """
 
     #If directory is not specified, use the working directory
     if dir is None:
@@ -28,10 +42,22 @@ def SearchDir(ending = ".txt",dir=None):
 
 
 def TraverseDir(ending=".txt",dir=None):
-    """Function for traversing a directory to search for files that end with the
-    specified suffix
+    """Traverse a directory to search for files that end with the
+    specified suffix.
 
-    Returns a list of full path file names"""
+    Parameters
+    ----------
+    ending: string (Default: ".txt")
+        Ending to search for in the given directory
+
+    dir: string (Default: None, will search in current working directory)
+        Directory to search for files in.
+
+    Returns
+    -------
+    full_list: list
+        List of pathlib objects for each file found with the given suffix.
+    """
 
     #If directory is not specified, use the working directory
     if dir is None:
@@ -49,8 +75,18 @@ def TraverseDir(ending=".txt",dir=None):
 
 
 def GetFinalTransformParameters(dir=None):
-    """Function for parsing an elastix parameter file or elastix.log file and
-    extracting a number associated with the given string parameter"""
+    """Extract Transform Parameter files from elastix in order.
+
+    Parameters
+    ----------
+    dir: string (Default: None, will search in current working directory)
+        Directory to search for files in.
+
+    Returns
+    -------
+    full_list: list
+        Transform paramter files as pathlib objects in order.
+    """
 
     #If directory is not specified, use the working directory
     if dir is None:
@@ -70,8 +106,26 @@ def GetFinalTransformParameters(dir=None):
 
 
 def ParseElastix(input,par):
-    """Function for parsing an elastix parameter file or elastix.log file and
-    extracting a number associated with the given string parameter"""
+    """Parse an elastix parameter file or elastix.log file and
+    extract a number associated with the given string parameter.
+
+    Parameters
+    ----------
+    input: string
+        Path to input file.
+
+    par: string
+        String indicating the parameter in the files to extract.
+
+    Returns
+    -------
+    number: string
+        Orginal string found in the given file. This will be converted to an
+        integer or a floating point number.
+
+    num: integer or float
+        Number corresponding to the parameter specified.
+    """
 
     #Read the transform parameters
     with open(input, 'r') as file:
@@ -90,83 +144,3 @@ def ParseElastix(input,par):
         num = float(number)
     #Return the number
     return number, num
-
-
-
-def ComposeTransforms(tps,out_dir):
-    """Function for composing a list of transform parameters together from
-    elastix
-
-    tps: list of paths for parameter files to string together -- in order of composition!
-    out_dir: Path to export newly generated/copied transform parameter files
-    """
-
-    #Ensure the given transform parameters are pathlib objects
-    tps = [Path(tp) for tp in tps]
-    #Ensure the output directory is pathlib object
-    out_dir = Path(out_dir)
-    #Create a list of new filenames that will be exported
-    new_tps = [Path(os.path.join(str(out_dir),"TransformParameters_comp."+str(i)+".txt")) for i in range(len(tps))]
-
-    #Extract and modify the first file in the list of transform parameters
-    with open(tps[0], 'r') as file:
-        #Read the file
-        filedata = file.read()
-        #Search for the initial transform parameter
-        for l in list(filedata.split("\n")):
-            #Check if inital transform string is in the line
-            if "InitialTransformParametersFileName" in l:
-                #Extract the inital transform parameter string
-                init_trans = str(l.split(" ")[1].strip(")").strip('"'))
-
-    #Check to ensure that the initial transform is no initial transform
-    if not init_trans == 'NoInitialTransform':
-        #Then replace the initial transform in the file with no inital transform
-        filedata = filedata.replace(init_trans, 'NoInitialTransform')
-
-    #Write out the new data to the new transform parameter filename
-    with open(new_tps[0], 'w') as file:
-        #Write the new file
-        file.write(filedata)
-
-    #Remove the filedata for now
-    filedata = None
-
-    #Iterate through all other files and change inital transforms
-    for t in range(1,len(tps[1:])+1):
-        #Extract and modify the first file in the list of transform parameters
-        with open(tps[t], 'r') as f:
-            #Read the file
-            filedata = f.read()
-            #Search for the initial transform parameter
-            for l in list(filedata.split("\n")):
-                #Check if inital transform string is in the line
-                if "InitialTransformParametersFileName" in l:
-                    #Extract the inital transform parameter string
-                    init_trans = l.split(" ")[1].strip(")").strip('"')
-
-        #Then replace the initial transform in the file with the previous transform
-        filedata = filedata.replace(init_trans, str(new_tps[t-1]))
-
-        #Write out the new data to the new transform parameter filename
-        with open(new_tps[t], 'w') as file:
-            #Write the new file
-            file.write(filedata)
-
-    #Remove the filedata for now
-    filedata = None
-
-    #Return the list of new parameter files
-    return new_tps
-
-
-
-
-
-
-
-
-
-
-
-#

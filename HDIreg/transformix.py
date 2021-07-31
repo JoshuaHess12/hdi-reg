@@ -20,11 +20,20 @@ from hdiutils.HDIexport import hdi_exporter
 
 def GetCropCoords(coords_csv, correction = 80):
 	"""
-	Read csv file containing coordinates for rectangular crop through FIJI and return the
-	coordinates as a list
+	Read csv file containing coordinates for rectangular crop through
+	FIJI and return the coordinates as a list.
 
-	coords_csv: path to csv file containing coordinates
-	correction: extra pixels to take on each side of the crop contour for buffer (default:80)
+	Parameters
+	----------
+	coords_csv: string.
+		Path to csv file containing coordinates.
+
+	correction: integer (Default: 80)
+		Extra pixels to take on each side of the crop contour for buffer.
+
+	Returns
+	-------
+	list with min row, max row, min col, max col coordinates of bounding box.
 	"""
 
 	#Ensure that the csv is pathlib object
@@ -57,13 +66,23 @@ def GetCropCoords(coords_csv, correction = 80):
 
 
 def CropROI(coords,full_img,target_size = None):
-	"""
-	Extract region of interest from full image array
-	coords: Returned coordinates from GetCropCoords -- list of coordinates
-	full_img: Array that contains the image to be cropped from
-	target_size: target size of the resulting crop -- resizing if not None
+	"""Extract region of interest from full image array.
 
-	Returns nibabel nifti object for now that is the cropped region to be exported
+	Parameters
+	----------
+	coords: list
+		Returned from ``GetCropCoords``
+
+	full_img: array
+		Contains the image to be cropped from.
+
+    target_size: tuple of type integer (sizex,sizey; Default: None)
+        Resize image using bilinear interpolation before exporting.
+
+	Returns
+	-------
+	nifti_ROI: object of class nibabel.Nifti1Image
+		Returns nibabel nifti object that is the cropped region to be exported.
 	"""
 
 	#Get region of interest crop from the full array using coorinates
@@ -76,6 +95,7 @@ def CropROI(coords,full_img,target_size = None):
 
 	if target_size is not None:
 		#Remember that cv2 does the axis in the opposite order as numpy
+		# note here that we are no longer using cv2 -- this is skimage resizing...
 		tmp_ROI = resize(tmp_ROI,target_size)
 
 	#Create a nifti object
@@ -87,10 +107,27 @@ def CropROI(coords,full_img,target_size = None):
 
 def ExtractROIcrop(coords_csv, full_img, target_size = None, correction = 80):
 	"""
-	Combining csv coordinate reading with buffer/correction with crop extract to return
+	Combine ``CropROI`` and ``GetCropCoords`` to return
 	a nifti object available for export.
 
-	arguments are inherited from the GetCropCoords and CropROI functions
+	Parameters
+	----------
+	coords_csv: string.
+		Path to csv file containing coordinates.
+
+	full_img: array
+		Contains the image to be cropped from.
+
+    target_size: tuple of type integer (sizex,sizey; Default: None)
+        Resize image using bilinear interpolation before exporting.
+
+	correction: integer (Default: 80)
+		Extra pixels to take on each side of the crop contour for buffer.
+
+	Returns
+	-------
+	crop_im: object of class nibabel.Nifti1Image
+		Returns nibabel nifti object that is the cropped region to be exported.
 	"""
 
 	#Extract the coordinates from the csv file
@@ -105,11 +142,19 @@ def ExtractROIcrop(coords_csv, full_img, target_size = None, correction = 80):
 
 #Define base component transformix
 def RunTransformix(command):
-	"""Run the transfomix deformation. You must be able to call transformix
-	from your command shell to use this. You must also have your parameter
-	text files set before running (see elastix parameter files).
+	"""Run the transfomix transformation. You must be able to call transformix
+	from your command shell to use this. You must also have your transformation
+	parameter files set before running (see transformix parameter files).
 
-	command: string to be sent to the system for elastix running (see transformix command line implementation)
+	Parameters
+	----------
+	command: string
+		Sent to the system for transformix running (see elastix command line implementation).
+
+	Returns
+	-------
+	command: string
+		Same string as above.
 	"""
 
 	#Print command
@@ -125,18 +170,28 @@ def RunTransformix(command):
 
 
 def CreateCompositeTransforms(tps, out_dir):
-	"""
-	Apply a series of transformations to an image using transformix. Prior
+	"""Apply a series of transformations to an image using transformix. Prior
 	results show that composing transforms in elastix do not yield the same
 	result as appying each transformation in series. This will take more time
 	but will give the expected result. A new copy of transform parameters will
 	be created and exported to the out_dir
 
-	im_in: path to input image
+	Parameters
+	----------
+	tps: list (length number of transformation parameter files)
+		Path to elastix image registration transform parameter files (in order of application).
 
-	tps: list of transform parameter paths
+	out_dir: string
+		Path to output directory for transform parameters and output results.
 
-	out_dir: path to output directory for transform parameters and output results
+	Returns
+	-------
+	transform_calls: list
+		List of transform parameters to insert into the transformix command "--tp".
+
+	init_trans_list: list
+		List of initial transformations in the tranform parameter files. These
+		are part of the actual transform parameter .txt files.
 	"""
 
 	#Ensure the input tps are pathlib objects
@@ -218,8 +273,18 @@ def CreateCompositeTransforms(tps, out_dir):
 
 
 def MultiTransformix(in_im, out_dir, tps):
-	"""
-	Applies multiple transform files in sequence to an image
+	"""Applies multiple transform files in sequence to an image.
+
+	Parameters
+	----------
+	in_im: string
+		Input image path.
+
+	tps: list (length number of transformation parameter files)
+		Path to elastix image registration transform parameter files (in order of application).
+
+	out_dir: string
+		Path to output directory for transform parameters and output results.
 	"""
 
 	#Ensure the input image is pathlib object
@@ -303,30 +368,54 @@ def MultiTransformix(in_im, out_dir, tps):
 
 #Create class structure for transformix implementation
 class Transformix():
-	"""Python class for transformix
+	"""Python implementation of Transformix with automated image pre-processing.
+	
+	Parameters
+	----------
+	in_im: string
+		Input image path.
+
+	out_dir: string
+		Path to output directory for transform parameters and output results.
+
+	tps: list (length number of transformation parameter files)
+		Path to elastix image registration transform parameter files (in order of application).
+
+    target_size: tuple of type integer (sizex,sizey; Default: None)
+        Resize image using bilinear interpolation before exporting.
+
+    pad: tuple of type integer (padx,pady; Default: None)
+        Indicates height and length padding to add to the image before exporting.
+
+    trim: tuple of type integer (trimx,trimy; Default: None)
+        Indicates height and length trimming to remove from the image before exporting.
+
+	crops: dictionary (Default: None)
+		Dictionary of dictionaries containing {crop_name(s): {coords_csv: , target_size: , correction: , tp: , fixed_pad: }}.
+		All arguments for each cropped region (i.e., region of interest) are performed
+		only on the given crop.
+
+			* coords_csv: string.
+				Path to csv file containing coordinates.
+
+			* target_size: tuple of type integer (sizex,sizey; Default: None)
+				Resize image using bilinear interpolation before exporting.
+
+			* correction: integer
+				Extra pixels to take on each side of the crop contour for buffer.
+
+			* tp: list (length number of transformation parameter files)
+				Path to elastix image registration transform parameter files
+				(in order of application) for this crop.
+
+		    * fixed_pad: integer
+				Indicates trim to remove from the cropped image before exporting. This should be the
+				same value as the amount of padding applied to
+				the cropped region's corresponding fixed image that was used for
+				registration.
 	"""
 
 	def __init__(self, in_im, out_dir, tps, target_size = None, pad = None, trim = None, crops = None, out_ext = ".nii"):
-		"""
-		initialize class instance and run transformix with the input parameters
-
-		in: path to input image
-
-		out_dir: path to output directory
-
-		tps: list of paths to transform parameters -- let them be in order!
-
-		target_size: tuple indicating the target size for any rescaling applied
-		to input image prior to transforming
-
-		crops: None if no cropping and subsequent transforming to be done.
-		Dictionary of dictionaries containing {crop_name(s): {coords_csv: , target_size: , correction: , tp: , fixed_pad: }}
-			coords_csv: path to csv containing coordinates for square region of interest to be cropped
-			correction: padding/buffer to add to the csv coordinates (error correction)
-			target_size: tuple indicating target size (resizing) to be applied to the ROI prior to transforming
-			tps: list of transform parameters for this crop
-			fixed_pad: integer indicating the amount of padding applied to fixed image for registration purposes.
-		"""
 
 		#Create pathlib objects and set class parameters
 		self.in_im = Path(in_im)
@@ -563,8 +652,15 @@ class Transformix():
 		#return self.command
 
 	def _singlechannelTransformixArray(self, niiIn):
-		"""
-		helper function for single channel transformix call on array data
+		"""Helper function for single channel transformix call on array data.
+
+		Parameters
+		----------
+		niiIn: class HDIreader
+			Input image that is read initially with the hdiutils python package.
+			The details of the image are stored inside of this class object,
+			and the ``Transformix`` class will access those to automatically
+			process the image.
 		"""
 		# here we will get the extension of the image and will convert it to the nift-1
 		# format if it is not already in that format. While users can supply their own
@@ -652,8 +748,15 @@ class Transformix():
 			res_name.rename(new_name)
 
 	def _multichannelTransformixArray(self, niiIn):
-		"""
-		helper function for running multichannel transformix on array data
+		"""Helper function for running multichannel transformix on array data.
+
+		Parameters
+		----------
+		niiIn: class HDIreader
+			Input image that is read initially with the hdiutils python package.
+			The details of the image are stored inside of this class object,
+			and the ``Transformix`` class will access those to automatically
+			process the image.
 		"""
 		# create a temporary directory using the context manager for channel-wise images
 		with tempfile.TemporaryDirectory(dir=self.out_dir) as tmpdirname:
@@ -741,8 +844,15 @@ class Transformix():
 				hdi_exporter.HDIexporter(full_result.get_fdata().transpose(1,0,2),full_name)
 
 	def _multichannelTransformixRaster(self, niiIn):
-		"""
-		helper function for running multichannel transformix on raster data
+		"""Helper function for running multichannel transformix on raster data.
+
+		Parameters
+		----------
+		niiIn: class HDIreader
+			Input image that is read initially with the hdiutils python package.
+			The details of the image are stored inside of this class object,
+			and the ``Transformix`` class will access those to automatically
+			process the image.
 		"""
 		# create a temporary directory using the context manager for channel-wise images
 		with tempfile.TemporaryDirectory(dir=self.out_dir) as tmpdirname:
